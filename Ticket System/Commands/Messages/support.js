@@ -6,15 +6,13 @@ const {
   StringSelectMenuOptionBuilder,
   ContainerBuilder,
   MediaGalleryBuilder,
-  MediaGalleryItemBuilder, 
+  MediaGalleryItemBuilder,
   SeparatorBuilder,
   MessageFlags,
-} = require("discord.js"); 
+} = require("discord.js");
 
-const STAFF_ROLES = ["WHO_CAN_SEND_THE_EMBED"];
-
-const SUPPORT_CHANNEL_ID = "WHERE_EMBED_IS_SENT"; 
-
+const STAFF_ROLES = ["1327670816296403047"];
+const SUPPORT_CHANNEL_ID = "1327670816887804003";
 const BANNER = "YOUR_BANNER_HERE";
 
 module.exports = {
@@ -23,9 +21,7 @@ module.exports = {
 
   execute: async function (message, client, args) {
     if (!message.member.roles.cache.some((r) => STAFF_ROLES.includes(r.id))) {
-      const reply = await message.reply(
-        "You do not have permission to use this command.",
-      );
+      const reply = await message.reply("You do not have permission to use this command.");
       setTimeout(() => reply.delete().catch(() => {}), 5000);
       return;
     }
@@ -46,7 +42,32 @@ module.exports = {
         ),
       )
       .addSeparatorComponents(new SeparatorBuilder().setDivider(false))
-      .addTextDisplayComponents((t) => t.setContent("> YOUR TEXT HERE"))
+      .addTextDisplayComponents((t) =>
+        t.setContent(
+`Casa Grande Fire Department Support
+
+## General Support
+• Questions & Assistance
+• Discord Server Help
+• Rules & Policy Clarification
+• Department Resources
+
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+
+## Board Of Chiefs Ticket
+• Reporting Firefighter / Paramedic Contuct
+• Critical Issues requiring Board Of Chiefs Review
+• Operational Concerns
+• Confidential Matters 
+
+▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
+
+⚠️ Notice
+• Select the correct category.
+• All tickets are reviewed by authorized CGFD Support Team.
+• Misuse of the ticket system may result in your ticket being closed.`
+        )
+      )
       .addSeparatorComponents(
         new SeparatorBuilder().setDivider(true).setSpacing(1),
       )
@@ -60,8 +81,8 @@ module.exports = {
                 .setLabel("General Support")
                 .setValue("general"),
               new StringSelectMenuOptionBuilder()
-                .setLabel("High Rank Support")
-                .setValue("executive"),
+                .setLabel("Board Of Chiefs Support")
+                .setValue("Board_Of_Chiefs"),
             ),
         ),
       );
