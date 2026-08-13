@@ -26,7 +26,7 @@ const CATEGORIES = {
  
 const TYPE_LABELS = {
   general: "General Support",
-  Board_Of_Chiefs: "Management Support"
+  Board_Of_Chiefs: "BOC Support"
 };
 
 const BANNERS = {
