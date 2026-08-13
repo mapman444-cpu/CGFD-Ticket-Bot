@@ -15,8 +15,8 @@ const { getRobloxInfo } = require("../Utils/docksystem");
 const SupportModel = require("../Database/Models/SupportModel");
 
 const TICKET_ROLES = {
-  Board_Of_Chiefs: ["WHO_CAN_SEE_THIS_TYPE_OF_TICKET"],
-  general: ["WHO_CAN_SEE_THIS_TYPE_OF_TICKET"]
+  Board_Of_Chiefs: ["1537220438873088000"],
+  general: ["1327670816036356206"]
 };
 
 const CATEGORIES = {
