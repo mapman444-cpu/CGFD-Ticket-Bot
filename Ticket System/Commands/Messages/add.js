@@ -1,7 +1,7 @@
 module.exports = {
   name: "add",
   description: "Add roles to your account. Usage: -add @role1",
-  roles: ["WHO_CAN_USE_THIS_COMMAND_ROLE_ID"], 
+  roles: ["1327670816036356206", "1537220438873088000"],
   cooldown: 3,
  
   execute: async function (message, client, args) {

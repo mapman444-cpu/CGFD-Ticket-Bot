@@ -12,7 +12,7 @@ const SupportModel = require("../../Database/Models/SupportModel");
 module.exports = {
   name: "cr", 
   description: "Send a close request in the current ticket.",
-  roles: ["WHO_CAN_USE_THIS_COMMAND_ROLE_ID"],
+  roles: ["1327670816036356206", "1537220438873088000"],
 
   allowedCategories: ["CATEGORY_ID_1", "CATEGORY_ID_2"],
 
