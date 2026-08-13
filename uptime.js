@@ -1,13 +1,15 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 const date = new Date();
 const formattedDate = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
 
 module.exports = {
-    data: new SlashCommandBuilder()
-        .setName('uptime')
-        .setDescription('Shows how long the bot has been online.'),
+    name: 'uptime',        
+    prefix: '-',         
+    execute(message) {
 
-    async execute(interaction) { 
+        // Only run if the message starts with -uptime
+        if (!message.content.startsWith(this.prefix + this.name)) return;
+
         const totalSeconds = Math.floor(process.uptime());
 
         const days = Math.floor(totalSeconds / 86400);
@@ -24,9 +26,8 @@ module.exports = {
                 { name: 'Minutes', value: `${minutes}`, inline: true },
                 { name: 'Seconds', value: `${seconds}`, inline: true }
             )
-            .setFooter({ text: `Date: ${formattedDate}` })
- 
-        await interaction.reply({ embeds: [embed] });
+            .setFooter({ text: `Date: ${formattedDate}` });
+
+        message.channel.send({ embeds: [embed] });
     }
 };
- 
