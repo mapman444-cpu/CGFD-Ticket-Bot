@@ -24,30 +24,13 @@ const client = new Client({
 });
 
 // Global error handlers
-process.on('unhandledRejection', (reason) => {
-    console.error('Unhandled Rejection:', reason);
-});
+process.on('unhandledRejection', (reason) => console.error('Unhandled Rejection:', reason));
+process.on('uncaughtException', (err) => console.error('Uncaught Exception:', err));
 
-process.on('uncaughtException', (err) => {
-    console.error('Uncaught Exception:', err);
-});
-
-// Discord client error handlers
-client.on('error', (err) => {
-    console.error('Discord client error:', err);
-});
-
-client.on('shardError', (err) => {
-    console.error('Shard error:', err);
-});
-
-client.on('disconnect', () => {
-    console.warn('Bot disconnected. Attempting to reconnect...');
-});
-
-client.on('reconnecting', () => {
-    console.log('Bot reconnecting...');
-});
+client.on('error', (err) => console.error('Discord client error:', err));
+client.on('shardError', (err) => console.error('Shard error:', err));
+client.on('disconnect', () => console.warn('Bot disconnected. Attempting to reconnect...'));
+client.on('reconnecting', () => console.log('Bot reconnecting...'));
 
 // MongoDB connection
 if (!process.env.MONGO_URI) {
@@ -61,43 +44,42 @@ if (!process.env.MONGO_URI) {
 // Command collection
 client.commands = new Collection();
 
-// Load prefix commands from Ticket System/Commands/Messages
-const commandsPath = path.join(__dirname, 'Ticket System', 'Commands', 'Messages');
+// Recursive command loader
+const basePath = path.join(__dirname, 'Ticket System', 'Commands');
 
-if (fs.existsSync(commandsPath)) {
-    const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
-
-    for (const file of commandFiles) {
-        const filePath = path.join(commandsPath, file);
-        const command = require(filePath);
-
-        if ('name' in command && 'execute' in command) {
-            client.commands.set(command.name, command);
-            console.log(`✔️ Loaded command: ${command.name}`);
-        } else {
-            console.log(`⚠️ Command at ${filePath} is missing "name" or "execute".`);
+function loadCommands(dir) {
+    const files = fs.readdirSync(dir);
+    for (const file of files) {
+        const fullPath = path.join(dir, file);
+        const stat = fs.statSync(fullPath);
+        if (stat.isDirectory()) {
+            loadCommands(fullPath);
+        } else if (file.endsWith('.js')) {
+            const command = require(fullPath);
+            if ('name' in command && 'execute' in command) {
+                client.commands.set(command.name, command);
+                console.log(`✔️ Loaded command: ${command.name}`);
+            } else {
+                console.log(`⚠️ Command at ${fullPath} is missing "name" or "execute".`);
+            }
         }
     }
-} else {
-    console.log("⚠️ Commands folder not found.");
 }
+
+loadCommands(basePath);
 
 // Prefix command handler
 client.on('messageCreate', async message => {
     if (message.author.bot) return;
 
     const prefix = '-';
-
     if (!message.content.startsWith(prefix)) return;
 
     const args = message.content.slice(prefix.length).trim().split(/ +/);
     const commandName = args.shift().toLowerCase();
 
     const command = client.commands.get(commandName);
-
-    if (!command) {
-        return message.reply(`❌ Unknown command: ${commandName}`);
-    }
+    if (!command) return message.reply(`❌ Unknown command: ${commandName}`);
 
     try {
         await command.execute(message, args);
@@ -118,27 +100,18 @@ client.once('ready', () => {
         }
     ];
 
-    let currentStatus = 0;
-
-    const updateStatus = () => {
-        client.user.setPresence({
-            activities: [statuses[currentStatus]],
-            status: 'online'
-        });
-    };
-
-    updateStatus();
+    client.user.setPresence({
+        activities: [statuses[0]],
+        status: 'online'
+    });
 });
 
 // Render keep-alive server
 const PORT = process.env.PORT || 3000;
-
 http.createServer((req, res) => {
     res.writeHead(200);
     res.end("Bot is running");
-}).listen(PORT, () => {
-    console.log(`🌐 Render PORT active on ${PORT}`);
-});
+}).listen(PORT, () => console.log(`🌐 Render PORT active on ${PORT}`));
 
 // Login
 client.login(process.env.TOKEN);
