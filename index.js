@@ -5,8 +5,6 @@ const {
     Client,
     Collection,
     GatewayIntentBits,
-    REST,
-    Routes,
     ActivityType
 } = require('discord.js');
 const mongoose = require('mongoose');
@@ -20,7 +18,8 @@ const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMembers,
-        GatewayIntentBits.GuildMessages
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent
     ]
 });
 
@@ -61,9 +60,8 @@ if (!process.env.MONGO_URI) {
 
 // Command collection
 client.commands = new Collection();
-const commands = [];
 
-// Safe command loader
+// Load prefix commands
 const commandsPath = path.join(__dirname, 'commands');
 
 if (fs.existsSync(commandsPath)) {
@@ -73,64 +71,39 @@ if (fs.existsSync(commandsPath)) {
         const filePath = path.join(commandsPath, file);
         const command = require(filePath);
 
-        if ('data' in command && 'execute' in command) {
-            client.commands.set(command.data.name, command);
-            commands.push(command.data.toJSON());
+        if ('name' in command && 'execute' in command) {
+            client.commands.set(command.name, command);
+            console.log(`✔️ Loaded command: ${command.name}`);
         } else {
-            console.log(`⚠️ Command at ${filePath} is missing "data" or "execute".`);
+            console.log(`⚠️ Command at ${filePath} is missing "name" or "execute".`);
         }
     }
 } else {
     console.log("⚠️ No 'commands' folder found — skipping command loading.");
 }
 
-// Slash command registration
-const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
+// Prefix command handler
+client.on('messageCreate', async message => {
+    if (message.author.bot) return;
 
-(async () => {
-    try {
-        console.log('🔄 Refreshing slash commands...');
+    const prefix = '-';
 
-        await rest.put(
-            Routes.applicationGuildCommands(
-                process.env.CLIENT_ID,
-                process.env.GUILD_ID
-            ),
-            { body: commands }
-        );
+    if (!message.content.startsWith(prefix)) return;
 
-        console.log('✅ Slash commands registered successfully.');
-    } catch (error) {
-        console.error(error);
-    }
-})();
+    const args = message.content.slice(prefix.length).trim().split(/ +/);
+    const commandName = args.shift().toLowerCase();
 
-// Interaction handler
-client.on('interactionCreate', async interaction => {
-    if (!interaction.isChatInputCommand()) return;
-
-    const command = client.commands.get(interaction.commandName);
+    const command = client.commands.get(commandName);
 
     if (!command) {
-        console.error(`❌ No command found for ${interaction.commandName}`);
-        return;
+        return message.reply(`❌ Unknown command: ${commandName}`);
     }
 
     try {
-        await command.execute(interaction);
+        await command.execute(message, args);
     } catch (error) {
         console.error(error);
-
-        const errorMessage = {
-            content: '❌ There was an error while executing this command.',
-            ephemeral: true
-        };
-
-        if (interaction.deferred || interaction.replied) {
-            await interaction.followUp(errorMessage);
-        } else {
-            await interaction.reply(errorMessage);
-        }
+        message.reply('❌ There was an error while executing this command.');
     }
 });
 
