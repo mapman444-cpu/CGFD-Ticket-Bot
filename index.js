@@ -61,8 +61,8 @@ if (!process.env.MONGO_URI) {
 // Command collection
 client.commands = new Collection();
 
-// Load prefix commands
-const commandsPath = path.join(__dirname, 'commands');
+// Load prefix commands from Ticket System/Commands/Messages
+const commandsPath = path.join(__dirname, 'Ticket System', 'Commands', 'Messages');
 
 if (fs.existsSync(commandsPath)) {
     const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
@@ -79,7 +79,7 @@ if (fs.existsSync(commandsPath)) {
         }
     }
 } else {
-    console.log("⚠️ No 'commands' folder found — skipping command loading.");
+    console.log("⚠️ Commands folder not found.");
 }
 
 // Prefix command handler
